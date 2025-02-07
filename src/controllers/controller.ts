@@ -1,7 +1,10 @@
-import autoBind from "auto-bind";
-
-module.exports = class controller {
+export default class Controller {
   constructor() {
-    autoBind(this);
+    Object.getOwnPropertyNames(Object.getPrototypeOf(this)).forEach((method) => {
+      if (typeof (this as any)[method] === "function") {
+        (this as any)[method] = (this as any)[method].bind(this);
+      }
+    });
   }
 };
+
