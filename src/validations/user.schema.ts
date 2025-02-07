@@ -17,4 +17,14 @@ const emailPattern = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
     .messages(createErrorMessage({ min: 8, max: 15, field: "کلمه عبور" }))
     .error(createHttpError.BadRequest("نام کاربری معتبر نمی باشد.")),
 });
-
+export const signInUserValidation = Joi.object({
+  email: Joi.string()
+  .required()
+  .email()
+  .pattern(emailPattern)
+  .error(createHttpError.BadRequest("ایمیل کاربری  معتبر نمی باشد.")),
+  password: Joi.string()
+  .required()
+  .messages(createErrorMessage({ min: 8, max: 15, field: "کلمه عبور" }))
+  .error(createHttpError.BadRequest("نام کاربری معتبر نمی باشد.")),
+})
