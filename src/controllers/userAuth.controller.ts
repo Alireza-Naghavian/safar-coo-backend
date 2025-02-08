@@ -1,7 +1,6 @@
-import type { NextFunction, Request, Response } from "express";
-import { verifyAccessToken } from "../middlewares/user.middleware";
-import userModel from "../models/user";
+import type { CookieOptions, NextFunction, Request, Response } from "express";
 import { Usertype } from "../@types/user.t";
+import userModel from "../models/user";
 import {
   comparePassword,
   hashPassword,
@@ -104,6 +103,24 @@ class userAuthController extends Controller {
       return res.status(200).json(user);
     } catch (error) {
       next(error);
+    }
+  }
+
+  async logout(_req: Request, res: Response, next: NextFunction): Promise<any>{
+    try {
+      const cookieOptions :CookieOptions= {
+        maxAge: 0,
+        expires: new Date(),
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        secure: process.env.NODE_ENV === "production" ? true : false,
+        path: "/",
+      };
+      res.cookie("accessToken",null,cookieOptions)
+      res.cookie("refreshToken",null,cookieOptions)
+      return res.status(200).json({message:"خروج موفقیت آمیز ",data:null,status:200})
+    } catch (error) {
+      next(error)
     }
   }
 }
