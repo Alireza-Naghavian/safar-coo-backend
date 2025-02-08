@@ -14,10 +14,14 @@ export interface TokenPayload extends JwtPayload {
   email: string;
 }
 
+export enum Roles {
+  "USER","ADMIN"
+}
+
 export type TokenOptions = {
   email: string;
   tokenSectretKey: string;
   expiresIn:  number;
-
+role:Roles
 };
 
