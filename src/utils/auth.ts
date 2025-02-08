@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { CookieOptions, Response } from "express";
 import { sign } from "jsonwebtoken";
-import { TokenOptions, Usertype } from "../types/user.t";
+import { TokenOptions, Usertype } from "../@types/user.t";
 const saltRounds = 12;
 const cookieOptions: CookieOptions = {
   httpOnly: true,
