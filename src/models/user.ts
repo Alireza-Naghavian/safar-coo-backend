@@ -15,12 +15,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       requred: true,
     },
-    changePassExpTime: {
+    resetTokenExpiration: {
       type: Date,
     },
-    isPassChanged: {
-      type: Boolean,
-      default: false,
+    resetToken: {
+      type: String,
+      required:false
     },
     role: { type: String, default: "USER" },
   },

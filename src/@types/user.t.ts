@@ -3,10 +3,10 @@ export type Usertype = {
   username: string;
   password: string;
   email: string;
-  changePassExpTime?: Date;
+  resetTokenExpiration?: Date;
   createdAt?: Date;
   updatedAt?: Date;
-  isPassChanged?: boolean;
+  resetToken?: string;
   role?: "USER" | "ADMIN";
 };
 
