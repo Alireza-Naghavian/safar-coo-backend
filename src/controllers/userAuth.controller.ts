@@ -9,6 +9,7 @@ import {
   setRefreshToken,
 } from "../utils/auth";
 import {
+  editProfileValidation,
   resetPasswordValidation,
   sendingEmailValidation,
   signInUserValidation,
@@ -171,8 +172,8 @@ class userAuthController extends Controller {
       <a href="${resetLink}">تغییر رمز عبور</a>
   `;
 
-      await sendEmail(email,"بازنشانی کلمه عبور",emailContent)
-      
+      await sendEmail(email, "بازنشانی کلمه عبور", emailContent);
+
       return res
         .status(200)
         .json({ message: "ایمیل بازنشانی ارسال شد", status: "success" });
@@ -223,6 +224,51 @@ class userAuthController extends Controller {
       return res
         .status(200)
         .json({ message: "رمز عبور با موفقیت آپدیت شد", status: 200 });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async editUserProfile(req: Request,res: Response,next: NextFunction): Promise<any> {
+    try {
+      const { newUsername, newPassword, email } = req.body;
+      await editProfileValidation.validateAsync({ newUsername, newPassword });
+
+      const user = await userModel.findOne(
+        { email },
+        "username email password"
+      );
+      if (!user) {
+        res
+          .status(404)
+          .json({ message: "کاربر یافت نشد", data: null, status: 404 });
+      }
+
+      const isSamePassword = await comparePassword(
+        user?.password as string,
+        newPassword
+      );
+
+      if (isSamePassword) {
+        return res
+          .status(403)
+          .json({
+            message: "کلمه عبور تکراری است.لطفا کلمه عبور جدید را وارد کنید",
+            status: 403,
+          });
+      }
+
+      // hash new password
+      const hashUserPassword = await hashPassword(newPassword);
+
+      await userModel.findOneAndUpdate(
+        { email },
+        { $set: { username: newUsername, password: hashUserPassword } }
+      );
+
+      return res
+        .status(200)
+        .json({ message: "اطلاعات با موفقیت بروزرسانی شد", status: 200 });
     } catch (error) {
       next(error);
     }

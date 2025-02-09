@@ -5,8 +5,8 @@ type ErrMsgType = {
 };
 export const createErrorMessage = ({ field, min, max }: ErrMsgType) => ({
   "string.empty": `${field} نمی‌تواند خالی باشد.`,
-  "string.min": `حداقل ${min} کاراکتر.`,
-  "string.max": `حداکثر ${max} کاراکتر.`,
+  "string.min": `${field} حداقل باید ${min} کاراکتر باشد.`,
+  "string.max": `${field} حداکثر باید ${max} کاراکتر باشد. `,
   "any.required": `${field} نمی‌تواند خالی باشد.`,
 });
 

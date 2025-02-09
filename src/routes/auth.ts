@@ -9,4 +9,6 @@ router.get("/getMe",verifyAccessToken,AuthController.getMe)
 router.post("/logout",verifyAccessToken,AuthController.logout)
 router.post("/request-reset",AuthController.sendingEmail)
 router.post("/reset-password",AuthController.resetPassword)
+router.patch("/user/edit",verifyAccessToken,AuthController.editUserProfile)
+
 export default router
