@@ -1,7 +1,7 @@
 import Joi from "joi";
 import { createErrorMessage } from "../utils/funs";
 
-export const ticketSchemaValidatio = Joi.object({
+export const ticketSchemaValidation = Joi.object({
   title: Joi.string()
     .required()
     .trim()

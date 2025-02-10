@@ -4,7 +4,7 @@ import UserController from "../controllers/user.controller";
 
 const router = express.Router();
 
-router.route("/ticket").post(verifyAccessToken, UserController.createTicket)
-.get(verifyAccessToken,UserController.ticket)
+router.route("/tickets").post(verifyAccessToken, UserController.createTicket)
+.get(verifyAccessToken,UserController.getTickets)
 
 export default router;
