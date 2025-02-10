@@ -7,4 +7,6 @@ const router = express.Router();
 router.route("/tickets").post(verifyAccessToken, UserController.createTicket)
 .get(verifyAccessToken,UserController.getTickets)
 
+
+
 export default router;

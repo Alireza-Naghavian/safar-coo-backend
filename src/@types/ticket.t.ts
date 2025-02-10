@@ -10,7 +10,7 @@ export type TickeType ={
     body:string,
     priority:number,
     user:ObjectId,
-    status?:"OPEN"|"PENDING"|"CLOSED"
+    status?:"REPLIED"|"PENDING"|"CLOSED"
     createAt?:Date,
     updatedAt?:Date
     messages:MsgTeyp[]|[]

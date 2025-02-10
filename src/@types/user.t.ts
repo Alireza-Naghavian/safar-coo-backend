@@ -12,7 +12,7 @@ export type Usertype = {
   _id:mongoose.Types.ObjectId
 };
 
-export interface TokenPayload extends JwtPayload {
+export type TokenPayload = JwtPayload& {
   email: string;
 }
 

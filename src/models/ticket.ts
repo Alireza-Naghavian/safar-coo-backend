@@ -35,7 +35,7 @@ const ticketSchema = new mongoose.Schema<TickeType>(
     status: {
       type: String,
       required: false,
-      default: "OPEN",
+      default: "PENDING",
     },
     user:{
         type:mongoose.Types.ObjectId ,

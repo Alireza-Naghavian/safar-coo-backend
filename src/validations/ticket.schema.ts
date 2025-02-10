@@ -1,5 +1,6 @@
 import Joi from "joi";
 import { createErrorMessage } from "../utils/funs";
+import createHttpError from "http-errors";
 
 export const ticketSchemaValidation = Joi.object({
   title: Joi.string()
@@ -19,5 +20,6 @@ export const ticketSchemaValidation = Joi.object({
     .min(1)
     .max(3)
     .required()
-    .messages(createErrorMessage({ max: 3, min: 1, field: "اولویت تیکت" })),
+    .messages(createErrorMessage({ max: 3, min: 1, field: "اولویت تیکت" }))
+    .error(createHttpError.BadRequest("اولویت تیکت نامعتبر میباشد")),
 });
