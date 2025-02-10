@@ -1,12 +1,12 @@
-import type { Application } from "express";
-import express = require("express");
-import dotenv = require("dotenv");
-import mongoose = require("mongoose");
-import cookieParser = require("cookie-parser");
-import setHeader = require("./middlewares/setHeaders");
-import cors = require("cors");
-import path = require("path")
-const errorHandler = require("./middlewares/errorHandlers")
+import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+import type { Application, NextFunction, Request, Response } from "express";
+import express from "express";
+import mongoose from "mongoose";
+import path from "path";
+import errorHandler from "./middlewares/errorHandlers";
+import setHeader from "./middlewares/setHeaders";
+import allRoutes from "./routes/router";
 dotenv.config();
 class App {
   private app: Application;
@@ -20,6 +20,7 @@ class App {
     this.connectedToDB();
     this.initClientSession();
     this.configServer();
+    this.configRoutes();
     this.errorHandling();
   }
   private createServer(): void {
@@ -31,7 +32,7 @@ class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({extended:true}))
     this.app.use(express.static(path.join(__dirname,"..")))
-    this.app.use(cors(setHeader));
+    this.app.use(setHeader);
   }
   private async connectedToDB(): Promise<void> {
     try {
@@ -46,9 +47,14 @@ class App {
   private initClientSession(): void {
     this.app.use(cookieParser(process.env.COOKIE_PARSER_SECRET_KEY));
   }
+  private configRoutes():void{
+    this.app.use("/api",allRoutes )
+  }
   private errorHandling():void{
-    this.app.use(errorHandler)
+    this.app.use((err:any,req:Request,res:Response,next:NextFunction)=>{
+      errorHandler(err,req,res,next)
+    }); 
   }
 }
 
-module.exports = App
+export default App 

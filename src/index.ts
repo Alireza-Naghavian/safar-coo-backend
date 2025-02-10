@@ -1,2 +1,3 @@
-const Application = require("./server")
-new Application();
+import App from "./server";
+
+new App()

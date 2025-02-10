@@ -39,73 +39,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.verifyAccessToken = void 0;
 var cookie_parser_1 = __importDefault(require("cookie-parser"));
-var dotenv_1 = __importDefault(require("dotenv"));
-var express_1 = __importDefault(require("express"));
-var mongoose_1 = __importDefault(require("mongoose"));
-var path_1 = __importDefault(require("path"));
-var errorHandlers_1 = __importDefault(require("./middlewares/errorHandlers"));
-var setHeaders_1 = __importDefault(require("./middlewares/setHeaders"));
-var router_1 = __importDefault(require("./routes/router"));
-dotenv_1.default.config();
-var App = /** @class */ (function () {
-    function App() {
-        this.app = (0, express_1.default)();
-        this.port = process.env.PORT || 5000;
-        this.db_uri = process.env.APP_DB;
-        this.createServer();
-        this.connectedToDB();
-        this.initClientSession();
-        this.configServer();
-        this.configRoutes();
-        this.errorHandling();
-    }
-    App.prototype.createServer = function () {
-        var _this = this;
-        this.app.listen(this.port, function () {
-            console.log("server listen to port ".concat(_this.port));
-        });
-    };
-    App.prototype.configServer = function () {
-        this.app.use(express_1.default.json());
-        this.app.use(express_1.default.urlencoded({ extended: true }));
-        this.app.use(express_1.default.static(path_1.default.join(__dirname, "..")));
-        this.app.use(setHeaders_1.default);
-    };
-    App.prototype.connectedToDB = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var error_1;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, mongoose_1.default.connect(this.db_uri)];
-                    case 1:
-                        _a.sent();
-                        console.log("mongo db connected succesfully :)");
-                        return [3 /*break*/, 3];
-                    case 2:
-                        error_1 = _a.sent();
-                        console.log("==> db connection error <==");
-                        console.log(error_1);
-                        console.log("==> db connection error <==");
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
+var jsonwebtoken_1 = require("jsonwebtoken");
+var verifyAccessToken = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var accessToken, token, isValidUser, error_1;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _b.trys.push([0, 2, , 3]);
+                return [4 /*yield*/, ((_a = req.cookies) === null || _a === void 0 ? void 0 : _a.accessToken)];
+            case 1:
+                accessToken = _b.sent();
+                if (!accessToken) {
+                    return [2 /*return*/, res
+                            .status(401)
+                            .json({ message: "لطفا وارد حساب کاربری خود شوید.", status: 401 })];
                 }
-            });
-        });
-    };
-    App.prototype.initClientSession = function () {
-        this.app.use((0, cookie_parser_1.default)(process.env.COOKIE_PARSER_SECRET_KEY));
-    };
-    App.prototype.configRoutes = function () {
-        this.app.use("/api", router_1.default);
-    };
-    App.prototype.errorHandling = function () {
-        this.app.use(function (err, req, res, next) {
-            (0, errorHandlers_1.default)(err, req, res, next);
-        });
-    };
-    return App;
-}());
-exports.default = App;
+                token = cookie_parser_1.default.signedCookie(accessToken, process.env.COOKIE_PARSER_SECRET_KEY);
+                isValidUser = (0, jsonwebtoken_1.verify)(token, process.env.AccessTokenSecretKey);
+                req.user = isValidUser;
+                return [2 /*return*/, next()];
+            case 2:
+                error_1 = _b.sent();
+                next(error_1);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); };
+exports.verifyAccessToken = verifyAccessToken;
