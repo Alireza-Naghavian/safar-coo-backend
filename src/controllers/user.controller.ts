@@ -55,7 +55,7 @@ class userController extends Controller {
         const {status}:Pick<TickeType,"status"> = req.query;
         const user = req.user._id;
         const tickets = await ticketModel.find({status,user}).populate("user","username role").lean();
-        if(!tickets) {
+        if(!tickets || tickets.length === 0) {
           res.status(404).json({message:"تیکتی یافت نشد",data:null,status:404})
          }
         return res.status(200).json(tickets)
@@ -75,6 +75,20 @@ try {
 } catch (error) {
   next(error)
 }
+  }
+
+  async getTicket(req:Request, res:Response, next:NextFunction ): Promise<any>{
+    try {
+        const {ticketID} = req.params
+        const user = req.user._id
+        const ticket = await ticketModel.find({user,_id:ticketID})
+        if(!ticket){
+          return res.status(404).json({message:"تیکت یافت نشد!",data:null,status:404})
+        }
+        return res.status(200).json(ticket)
+    } catch (error) {
+      next(error)
+    }
   }
 }
 
