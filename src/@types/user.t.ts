@@ -1,4 +1,5 @@
 import { JwtPayload } from "jsonwebtoken";
+import mongoose from "mongoose";
 export type Usertype = {
   username: string;
   password: string;
@@ -8,9 +9,10 @@ export type Usertype = {
   updatedAt?: Date;
   resetToken?: string;
   role?: "USER" | "ADMIN";
+  _id:mongoose.Types.ObjectId
 };
 
-export interface TokenPayload extends JwtPayload {
+export type TokenPayload = JwtPayload& {
   email: string;
 }
 

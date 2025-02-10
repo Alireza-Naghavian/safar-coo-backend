@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { TickeType } from "../@types/ticket.t";
 
 const messageSchema = new mongoose.Schema({
   body: {
@@ -17,7 +18,7 @@ const messageSchema = new mongoose.Schema({
   },
 });
 
-const ticketSchema = new mongoose.Schema(
+const ticketSchema = new mongoose.Schema<TickeType>(
   {
     title: {
       type: String,
@@ -34,7 +35,12 @@ const ticketSchema = new mongoose.Schema(
     status: {
       type: String,
       required: false,
-      default: "OPEN",
+      default: "PENDING",
+    },
+    user:{
+        type:mongoose.Types.ObjectId ,
+        ref:"user",
+        required: true,
     },
     messages: {
       type: [messageSchema],

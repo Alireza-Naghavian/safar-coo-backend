@@ -23,11 +23,7 @@ class userAuthController extends Controller {
     super();
   }
 
-  async signUpUser(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<any> {
+  async signUpUser(req: Request,res: Response,next: NextFunction): Promise<any> {
     try {
       const { email, password, username }: Usertype = req.body;
       await userSignUpValidation.validateAsync(req.body);
@@ -113,7 +109,7 @@ class userAuthController extends Controller {
     }
   }
 
-  async logout(_req: Request, res: Response, next: NextFunction): Promise<any> {
+  async logout(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       const cookieOptions: CookieOptions = {
         maxAge: 0,
@@ -133,11 +129,7 @@ class userAuthController extends Controller {
     }
   }
 
-  async sendingEmail(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<any> {
+  async sendingEmail(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       const { email } = req.body;
       await sendingEmailValidation.validateAsync(req.body);
@@ -182,11 +174,7 @@ class userAuthController extends Controller {
     }
   }
 
-  async resetPassword(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<any> {
+  async resetPassword(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       const { token, email, newPassword } = req.body;
       await resetPasswordValidation.validateAsync({ email, newPassword });
@@ -229,7 +217,7 @@ class userAuthController extends Controller {
     }
   }
 
-  async editUserProfile(req: Request,res: Response,next: NextFunction): Promise<any> {
+  async editUserProfile(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       const { newUsername, newPassword, email } = req.body;
       await editProfileValidation.validateAsync({ newUsername, newPassword });
@@ -250,12 +238,10 @@ class userAuthController extends Controller {
       );
 
       if (isSamePassword) {
-        return res
-          .status(403)
-          .json({
-            message: "کلمه عبور تکراری است.لطفا کلمه عبور جدید را وارد کنید",
-            status: 403,
-          });
+        return res.status(403).json({
+          message: "کلمه عبور تکراری است.لطفا کلمه عبور جدید را وارد کنید",
+          status: 403,
+        });
       }
 
       // hash new password

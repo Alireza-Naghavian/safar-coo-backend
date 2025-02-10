@@ -1,7 +1,8 @@
 import cookieParser from "cookie-parser";
 import { NextFunction, Request, Response } from "express";
-import { verify } from "jsonwebtoken";
-import { Usertype } from "../@types/user.t";
+import { JwtPayload, verify } from "jsonwebtoken";
+import {  TokenPayload, Usertype } from "../@types/user.t";
+import userModel from "../models/user";
 
 export const verifyAccessToken = async (
   req: Request,
@@ -20,11 +21,15 @@ export const verifyAccessToken = async (
       accessToken,
       process.env.COOKIE_PARSER_SECRET_KEY as string
     );
-    const isValidUser = verify(
-      token as string,
+    // console.log(token)
+    const tokenPayload:TokenPayload = verify(
+      token as string ,
       process.env.AccessTokenSecretKey as string
-    );
-    if(isValidUser)  req.user = isValidUser as Usertype
+    ) as TokenPayload
+    
+    const user = await userModel.findOne({email:tokenPayload.email})
+
+    if(user)  req.user = user as Usertype
     return next();
   } catch (error) {
     next(error);
