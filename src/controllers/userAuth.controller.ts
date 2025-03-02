@@ -1,5 +1,5 @@
 import type { CookieOptions, NextFunction, Request, Response } from "express";
-import { Usertype } from "../@types/user.t";
+import { TokenPayload, Usertype } from "../@types/user.t";
 import userModel from "../models/user";
 import crypto from "crypto";
 import {
@@ -17,6 +17,8 @@ import {
 } from "../validations/user.schema";
 import Controller from "./controller";
 import { sendEmail } from "../utils/sendEmail";
+import cookieParser from "cookie-parser";
+import { verify } from "jsonwebtoken";
 
 class userAuthController extends Controller {
   constructor() {
@@ -156,7 +158,7 @@ class userAuthController extends Controller {
       user.resetTokenExpiration = new Date(Date.now() + 3_600_000);
       await user.save();
 
-      const resetLink = `${process.env.CLIENT_URL}/reset-link?token=${resetToken}$email=${user.email}`;
+      const resetLink = `${process.env.CLIENT_URL}/auth/reset-link?token=${resetToken}&email=${user.email}`;
 
       const emailContent = `
       <h2>بازنشانی کلمه عبور</h2>
@@ -176,7 +178,7 @@ class userAuthController extends Controller {
 
   async resetPassword(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
-      const { token, email, newPassword } = req.body;
+      const { token, email, newPassword,confirmPassword } = req.body;
       await resetPasswordValidation.validateAsync({ email, newPassword });
 
       const user = await userModel.findOne({ email });
@@ -186,6 +188,12 @@ class userAuthController extends Controller {
           .json({ message: "کاربر یافت نشد", data: null, status: 404 });
       }
 
+
+        if(newPassword.toString().trim() !== confirmPassword.toString().trim()){
+          return res
+          .status(403)
+          .json({ message: "کلمه عبور یکسان نمی باشد" });
+        }
       // token validation
       const hashedToken = crypto
         .createHash("sha256")
@@ -259,6 +267,38 @@ class userAuthController extends Controller {
       next(error);
     }
   }
+
+
+  async clientAuthMiddleware(req: Request, res: Response, next: NextFunction): Promise<any>{
+  try {
+    const refreshtoken = req.headers?.refreshtoken
+    const accesstoken = req.headers?.accesstoken
+    if(!accesstoken||!refreshtoken){
+      return res
+      .status(401)
+      .json({ message: "لطفا وارد حساب کاربری خود شوید.", status: 401 });
+    }
+    const token = cookieParser.signedCookie(
+      accesstoken as string,
+      process.env.COOKIE_PARSER_SECRET_KEY as string
+    );
+    // console.log(token)
+    const tokenPayload:TokenPayload = verify(
+      token as string ,
+      process.env.AccessTokenSecretKey as string
+    ) as TokenPayload
+    
+    const user = await userModel.findOne({email:tokenPayload.email})
+   if(user){
+    return res.status(200).json({user,status:200})
+   }
+  } catch (error) {
+    next(error)
+  }
+  }
 }
+
+
+
 const AuthController = new userAuthController();
 export default AuthController;
