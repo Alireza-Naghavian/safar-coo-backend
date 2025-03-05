@@ -52,9 +52,14 @@ class userController extends Controller {
   // if has query
   async getTicketsByQueries(req:Request, res:Response, next:NextFunction ): Promise<any> {
       try {
-        const {status}:Pick<TickeType,"status"> = req.query;
+        const {status}:Pick<TickeType,"status"> = req.query||"";
         const user = req.user._id;
-        const tickets = await ticketModel.find({status,user}).populate("user","username role").lean();
+        let tickets =null 
+        if ( status &&status?.trim().length>0) {
+          tickets = await ticketModel.find({status,user}).populate("user","username role").lean();
+        } else {
+          tickets = await ticketModel.find({user}).populate("user","username role").lean();
+        }
         if(!tickets || tickets.length === 0) {
           res.status(404).json({message:"تیکتی یافت نشد",data:null,status:404})
          }
@@ -79,9 +84,9 @@ try {
 
   async getTicket(req:Request, res:Response, next:NextFunction ): Promise<any>{
     try {
-        const {ticketID} = req.params
+        const {ticketId} = req.params
         const user = req.user._id
-        const ticket = await ticketModel.find({user,_id:ticketID})
+        const ticket = await ticketModel.findOne({user,_id:ticketId}).populate("user","role").lean()
         if(!ticket){
           return res.status(404).json({message:"تیکت یافت نشد!",data:null,status:404})
         }

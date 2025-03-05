@@ -7,7 +7,7 @@ const router = express.Router();
 router.route("/tickets").post(verifyAccessToken, UserController.createTicket)
 .get(verifyAccessToken,UserController.getTickets)
 
-router.get("/ticket/:ticketID",verifyAccessToken,UserController.getTicket)
+router.get("/ticket/:ticketId",verifyAccessToken,UserController.getTicket)
 
 
 
