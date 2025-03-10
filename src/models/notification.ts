@@ -26,11 +26,13 @@ const notifSchema = new mongoose.Schema<NotificationsType>(
     },
     referType:{
       type:String
-    }
+    },
+    expireAt: { type: Date, default: () => new Date(Date.now() + 2592000000) },
+    createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
-notifSchema.index({createdAt:1},{expireAfterSeconds:2592000 })
+notifSchema.index({expireAt:1},{expireAfterSeconds:0 })
 const notificationModel = mongoose.model("notification", notifSchema);
 
 export default notificationModel;
