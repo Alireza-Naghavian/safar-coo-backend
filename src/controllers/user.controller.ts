@@ -4,9 +4,10 @@ import { TickeType } from "../@types/ticket.t";
 import { ticketSchemaValidation } from "../validations/ticket.schema";
 import mongoose from "mongoose";
 import ticketModel from "../models/ticket";
+import NotifController from "./notifications.controller";
 
 
-class userController extends Controller {
+class userController  extends Controller {
   constructor() {
     super();
   }
