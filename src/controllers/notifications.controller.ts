@@ -3,8 +3,9 @@ import notificationModel from "../models/notification";
 import NotificationService from "../services/notificationServices";
 import { NotificationsType } from "./../@types/notifs.t";
 import Controller from "./controller";
+import { isValidObjectId } from "mongoose";
 
-class NotificationContorller extends Controller {
+export class NotificationContorller extends Controller {
   private notificationService: NotificationService;
   constructor() {
     super();
@@ -32,6 +33,9 @@ class NotificationContorller extends Controller {
       const status = req.query.status as string | undefined;
       const user = req.user._id;
       let notifs = null;
+      await notificationModel.deleteMany({
+        expireAt: { $lte: new Date() }
+      });
       if (status && status?.trim().length > 0) {
         notifs = await notificationModel
           .find({ status, user })
@@ -61,6 +65,10 @@ class NotificationContorller extends Controller {
   ): Promise<any> {
     try {
       const userId = req.user._id;
+
+      await notificationModel.deleteMany({
+        expireAt: { $lte: new Date() }
+      });
       const notifications = await this.notificationService.getUserNotification(userId);
       return res.status(200).json(notifications);
     } catch (error) {
@@ -68,13 +76,12 @@ class NotificationContorller extends Controller {
     }
   }
 
-  async makeNotfiAsRead(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<any> {
+  async makeNotfiAsRead(req: Request,res: Response,next: NextFunction): Promise<any> {
     try {
       const { notifId } = req.body;
+      if(!isValidObjectId(notifId)){
+        return res.status(422).json({message:"شناسه اعلان معتبر نمیباشد",status:422})
+      }
       await this.notificationService.markNotifAsRead(notifId);
       return res
         .status(201)

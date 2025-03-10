@@ -1,13 +1,16 @@
+import cookieParser from "cookie-parser";
+import crypto from "crypto";
 import type { CookieOptions, NextFunction, Request, Response } from "express";
+import { verify } from "jsonwebtoken";
 import { TokenPayload, Usertype } from "../@types/user.t";
 import userModel from "../models/user";
-import crypto from "crypto";
 import {
   comparePassword,
   hashPassword,
   setAccessToken,
   setRefreshToken,
 } from "../utils/auth";
+import { sendEmail } from "../utils/sendEmail";
 import {
   editProfileValidation,
   resetPasswordValidation,
@@ -16,16 +19,29 @@ import {
   userSignUpValidation,
 } from "../validations/user.schema";
 import Controller from "./controller";
-import { sendEmail } from "../utils/sendEmail";
-import cookieParser from "cookie-parser";
-import { verify } from "jsonwebtoken";
+import { NotificationContorller } from "./notifications.controller";
+import { ObjectId } from "mongoose";
 
 class userAuthController extends Controller {
+  private applyNotification: NotificationContorller;
   constructor() {
     super();
+    this.applyNotification = new NotificationContorller();
+    this.signUpUser;
+    this.signIn;
+    this.getMe;
+    this.logout;
+    this.sendingEmail;
+    this.resetPassword;
+    this.editUserProfile;
+    this.clientAuthMiddleware;
   }
 
-  async signUpUser(req: Request,res: Response,next: NextFunction): Promise<any> {
+  async signUpUser(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     try {
       const { email, password, username }: Usertype = req.body;
       await userSignUpValidation.validateAsync(req.body);
@@ -131,7 +147,11 @@ class userAuthController extends Controller {
     }
   }
 
-  async sendingEmail(req: Request, res: Response, next: NextFunction): Promise<any> {
+  async sendingEmail(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     try {
       const { email } = req.body;
       await sendingEmailValidation.validateAsync(req.body);
@@ -176,9 +196,13 @@ class userAuthController extends Controller {
     }
   }
 
-  async resetPassword(req: Request, res: Response, next: NextFunction): Promise<any> {
+  async resetPassword(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     try {
-      const { token, email, newPassword,confirmPassword } = req.body;
+      const { token, email, newPassword, confirmPassword } = req.body;
       await resetPasswordValidation.validateAsync({ email, newPassword });
 
       const user = await userModel.findOne({ email });
@@ -188,12 +212,9 @@ class userAuthController extends Controller {
           .json({ message: "کاربر یافت نشد", data: null, status: 404 });
       }
 
-
-        if(newPassword.toString().trim() !== confirmPassword.toString().trim()){
-          return res
-          .status(403)
-          .json({ message: "کلمه عبور یکسان نمی باشد" });
-        }
+      if (newPassword.toString().trim() !== confirmPassword.toString().trim()) {
+        return res.status(403).json({ message: "کلمه عبور یکسان نمی باشد" });
+      }
       // token validation
       const hashedToken = crypto
         .createHash("sha256")
@@ -225,7 +246,11 @@ class userAuthController extends Controller {
     }
   }
 
-  async editUserProfile(req: Request, res: Response, next: NextFunction): Promise<any> {
+  async editUserProfile(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     try {
       const { newUsername, newPassword, email } = req.body;
       await editProfileValidation.validateAsync({ newUsername, newPassword });
@@ -259,7 +284,14 @@ class userAuthController extends Controller {
         { email },
         { $set: { username: newUsername, password: hashUserPassword } }
       );
-
+      const notifBody = {
+        body: "اطلاعات حساب شما با موفقیت بروزرسانی شد.",
+        title: "بروزرسانی اطلاعات",
+        refer: req.user._id as unknown as ObjectId ,
+        referType: "user",
+        user: user?._id as unknown as ObjectId  ,
+      };
+      await this.applyNotification.createNotification(notifBody);
       return res
         .status(200)
         .json({ message: "اطلاعات با موفقیت بروزرسانی شد", status: 200 });
@@ -268,37 +300,38 @@ class userAuthController extends Controller {
     }
   }
 
+  async clientAuthMiddleware(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
+    try {
+      const refreshtoken = req.headers?.refreshtoken;
+      const accesstoken = req.headers?.accesstoken;
+      if (!accesstoken || !refreshtoken) {
+        return res
+          .status(401)
+          .json({ message: "لطفا وارد حساب کاربری خود شوید.", status: 401 });
+      }
+      const token = cookieParser.signedCookie(
+        accesstoken as string,
+        process.env.COOKIE_PARSER_SECRET_KEY as string
+      );
+      // console.log(token)
+      const tokenPayload: TokenPayload = verify(
+        token as string,
+        process.env.AccessTokenSecretKey as string
+      ) as TokenPayload;
 
-  async clientAuthMiddleware(req: Request, res: Response, next: NextFunction): Promise<any>{
-  try {
-    const refreshtoken = req.headers?.refreshtoken
-    const accesstoken = req.headers?.accesstoken
-    if(!accesstoken||!refreshtoken){
-      return res
-      .status(401)
-      .json({ message: "لطفا وارد حساب کاربری خود شوید.", status: 401 });
+      const user = await userModel.findOne({ email: tokenPayload.email });
+      if (user) {
+        return res.status(200).json({ user, status: 200 });
+      }
+    } catch (error) {
+      next(error);
     }
-    const token = cookieParser.signedCookie(
-      accesstoken as string,
-      process.env.COOKIE_PARSER_SECRET_KEY as string
-    );
-    // console.log(token)
-    const tokenPayload:TokenPayload = verify(
-      token as string ,
-      process.env.AccessTokenSecretKey as string
-    ) as TokenPayload
-    
-    const user = await userModel.findOne({email:tokenPayload.email})
-   if(user){
-    return res.status(200).json({user,status:200})
-   }
-  } catch (error) {
-    next(error)
-  }
   }
 }
-
-
 
 const AuthController = new userAuthController();
 export default AuthController;

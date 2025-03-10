@@ -4,12 +4,10 @@ export type NotificationsType ={
     title:string,
     referType:string,
     body:string,
-    refer:{
-        type:ObjectId,
-        ref:string
-    },
+    refer:ObjectId,
     user:ObjectId,
-    status:"READ"|"UNREAD",
-    updatedAt:Date,
-    createdAt:Date
+    status?:"READ"|"UNREAD",
+    updatedAt?:Date,
+    expireAt?:Date
+    createdAt?:Date
 }
