@@ -3,6 +3,6 @@ import NotifController from "../controllers/notifications.controller";
 import { verifyAccessToken } from "../middlewares/user.middleware";
 const router = express.Router();
 
-router.get("/all",verifyAccessToken,NotifController.getUserNotifs)
+router.get("/all",verifyAccessToken,NotifController.getNotifs)
 router.patch("/update",verifyAccessToken,NotifController.makeNotfiAsRead)
 export default router
