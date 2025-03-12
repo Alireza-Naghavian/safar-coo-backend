@@ -1,9 +1,11 @@
 import express from "express";
 import AuthRoutes from "./auth";
-import UserRoutes from "./user"
-import notifications from "./notifications"
+import UserRoutes from "./user";
+import notifications from "./notifications";
+import experience from "./experinces";
 const router: express.Router = express.Router();
 router.use("/auth", AuthRoutes);
-router.use("/user",UserRoutes);
-router.use("/notif",notifications)
-export default router  
+router.use("/user", UserRoutes);
+router.use("/notif", notifications);
+router.use("/experience", experience);
+export default router;
