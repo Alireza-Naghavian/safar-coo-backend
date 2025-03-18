@@ -28,12 +28,17 @@ const travelExperienceSchema = new mongoose.Schema<TravelExprerience>(
     publishTime: {
       type: Date,
       required: false,
-      default:  Date.now,
+      default:  null,
     },
     category: {
       type: String,
       required: true,
     },
+    isPublished:{
+      type:Boolean,
+      required:false,
+      default:false
+    }
   },
   { timestamps: true }
 );
