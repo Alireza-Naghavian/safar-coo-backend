@@ -6,4 +6,5 @@ export type TravelExprerience = {
     plan:"PAID"|"FREE";
     publishTime:Date|null,
     body:string
+    isPublished:boolean
 }

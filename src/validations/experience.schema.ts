@@ -21,7 +21,6 @@ export const trExperienceValidation = Joi.object({
     .messages(
       createErrorMessage({ max: Infinity, min: 0, field: "دسته بندی" })
     ),
-  address: Joi.string().min(3).trim(),
   plan: Joi.string()
     .valid("PAID", "FREE")
     .required()

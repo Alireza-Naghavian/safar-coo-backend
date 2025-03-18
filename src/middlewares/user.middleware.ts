@@ -21,7 +21,6 @@ export const verifyAccessToken = async (
       accessToken,
       process.env.COOKIE_PARSER_SECRET_KEY as string
     );
-    // console.log(token)
     const tokenPayload:TokenPayload = verify(
       token as string ,
       process.env.AccessTokenSecretKey as string
