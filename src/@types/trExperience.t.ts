@@ -1,3 +1,5 @@
+import { ObjectId } from "mongoose";
+
 export type TravelExprerience = {
     title:string,
     address:string
@@ -7,4 +9,5 @@ export type TravelExprerience = {
     publishTime:Date|null,
     body:string
     isPublished:boolean
+    publisher:ObjectId
 }
