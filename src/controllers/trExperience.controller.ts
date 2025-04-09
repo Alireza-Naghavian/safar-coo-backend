@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { ObjectId } from "mongoose";
+import { isValidObjectId, ObjectId } from "mongoose";
 import shedule from "node-schedule";
 import { TravelExprerience } from "../@types/trExperience.t";
 import exprerienceModel from "../models/trExperience";
@@ -44,7 +44,6 @@ class TravelExperience extends Controller {
           finalAddress = geoCodeAddress;
         }
       }
-
       const addExperience = await exprerienceModel.create({
         title,
         body,
@@ -54,24 +53,27 @@ class TravelExperience extends Controller {
         location,
         address: finalAddress,
         isPublished: !publishTime ? true : false,
+        publisher: user._id,
       });
 
-      //   publised on specific date ?
-
+      // publised on specific date ?
       if (publishTime !== null) {
-        shedule.scheduleJob(new Date(publishTime), async () => {
-          await exprerienceModel.findOneAndUpdate(
-            { _id: addExperience._id },
-            { $set: { isPublished: true } }
-          );
-          await this.notificationSevice.createNotification({
-            title: "تجربه سفر شما منتشر شد.",
-            body: `مقاله که در صف انتشار قرار گرفته بود،هم‌اکنون منتشر شد`,
-            refer: user._id as unknown as ObjectId,
-            user: user._id as unknown as ObjectId,
-            referType: "experience",
-          });
-        });
+        shedule.scheduleJob(
+          new Date(publishTime).getTime() + 2 * 60 * 1000,
+          async () => {
+            await exprerienceModel.findOneAndUpdate(
+              { _id: addExperience._id },
+              { $set: { isPublished: true } }
+            );
+            await this.notificationSevice.createNotification({
+              title: "تجربه سفر شما منتشر شد.",
+              body: `مقاله که در صف انتشار قرار گرفته بود،هم‌اکنون منتشر شد`,
+              refer: user._id as unknown as ObjectId,
+              user: user._id as unknown as ObjectId,
+              referType: "experience",
+            });
+          }
+        );
         return res.status(201).json({
           message: `تجربه کاربری  شما با موفقیت در صف انتشار قرار گرفت`,
           status: 201,
@@ -83,7 +85,7 @@ class TravelExperience extends Controller {
         refer: user._id as unknown as ObjectId,
         user: user._id as unknown as ObjectId,
         referType: "experience",
-      })
+      });
       return res
         .status(201)
         .json({ message: `تجربه سفر شما ما موفقیت منتشر شد`, status: 201 });
@@ -92,14 +94,35 @@ class TravelExperience extends Controller {
     }
   }
 
-  async ExperienceHandler(req: Request, res: Response, next: NextFunction) {
+  async ExperienceHandler(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     try {
+      const hasQuey = Object.keys(req.query).length > 0;
+      if (hasQuey) {
+        return this.getExperiencesByQueries(req, res, next);
+      } else {
+        return this.getExperiencesPanel(req, res, next);
+      }
     } catch (error) {
       next(error);
     }
   }
-  async getExperiences(req: Request, res: Response, next: NextFunction) {
+  async getExperiencesPanel(req: Request, res: Response, next: NextFunction) {
     try {
+      const user = req.user._id;
+      const experiences = await exprerienceModel.find(
+        { publisher: user },
+        "-__v -updatedAt"
+      );
+      if (!experiences) {
+        return res
+          .status(404)
+          .json({ message: "تجربه‌ای یافت نشد", status: 404 });
+      }
+      return res.status(200).json(experiences);
     } catch (error) {
       next(error);
     }
@@ -108,8 +131,23 @@ class TravelExperience extends Controller {
     req: Request,
     res: Response,
     next: NextFunction
-  ) {
+  ): Promise<any> {
     try {
+      const status = req.query.status as "allTrExp" | "published" | "queue";
+      const user = req.user._id;
+      const filterMap: Record<"allTrExp" | "published" | "queue", object> = {
+        published: { publisher: user, isPublished: true },
+        queue: { publisher: user, isPublished: false },
+        allTrExp: { publisher: user },
+      };
+      const filter = filterMap[status];
+      const experiences = await exprerienceModel.find(filter);
+      if (!experiences || experiences.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "تجربه سفر یافت نشد", status: 404 });
+      }
+      return res.status(200).json(experiences);
     } catch (error) {
       next(error);
     }
@@ -120,8 +158,22 @@ class TravelExperience extends Controller {
       next(error);
     }
   }
-  async removeExperiences(req: Request, res: Response, next: NextFunction) {
+  async removeExperiences(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     try {
+      const { expId } = req.params;
+      if (!isValidObjectId(expId)) {
+        return res
+          .status(422)
+          .json({ message: "شناسه تجربه سفر معتبر نمیباشد", status: 422 });
+      }
+      await exprerienceModel.findOneAndDelete({ _id: expId });
+      return res
+        .status(200)
+        .json({ message: "تجربه سفر با موفقیت حذف گردید", status: 200 });
     } catch (error) {
       next(error);
     }

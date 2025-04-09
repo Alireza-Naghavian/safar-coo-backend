@@ -38,6 +38,11 @@ const travelExperienceSchema = new mongoose.Schema<TravelExprerience>(
       type:Boolean,
       required:false,
       default:false
+    },
+    publisher:{
+      type:mongoose.Types.ObjectId,
+      ref:"user",
+      required:true
     }
   },
   { timestamps: true }
