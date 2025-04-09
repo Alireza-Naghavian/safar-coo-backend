@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { ObjectId } from "mongoose";
+import { isValidObjectId, ObjectId } from "mongoose";
 import shedule from "node-schedule";
 import { TravelExprerience } from "../@types/trExperience.t";
 import exprerienceModel from "../models/trExperience";
@@ -102,19 +102,19 @@ class TravelExperience extends Controller {
     try {
       const hasQuey = Object.keys(req.query).length > 0;
       if (hasQuey) {
-        return this.getExperiences(req, res, next);
-      } else {
         return this.getExperiencesByQueries(req, res, next);
+      } else {
+        return this.getExperiencesPanel(req, res, next);
       }
     } catch (error) {
       next(error);
     }
   }
-  async getExperiences(req: Request, res: Response, next: NextFunction) {
+  async getExperiencesPanel(req: Request, res: Response, next: NextFunction) {
     try {
       const user = req.user._id;
       const experiences = await exprerienceModel.find(
-        { publisher: user, isPublished: true },
+        { publisher: user },
         "-__v -updatedAt"
       );
       if (!experiences) {
@@ -131,8 +131,23 @@ class TravelExperience extends Controller {
     req: Request,
     res: Response,
     next: NextFunction
-  ) {
+  ): Promise<any> {
     try {
+      const status = req.query.status as "allTrExp" | "published" | "queue";
+      const user = req.user._id;
+      const filterMap: Record<"allTrExp" | "published" | "queue", object> = {
+        published: { publisher: user, isPublished: true },
+        queue: { publisher: user, isPublished: false },
+        allTrExp: { publisher: user },
+      };
+      const filter = filterMap[status];
+      const experiences = await exprerienceModel.find(filter);
+      if (!experiences || experiences.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "تجربه سفر یافت نشد", status: 404 });
+      }
+      return res.status(200).json(experiences);
     } catch (error) {
       next(error);
     }
@@ -143,8 +158,22 @@ class TravelExperience extends Controller {
       next(error);
     }
   }
-  async removeExperiences(req: Request, res: Response, next: NextFunction) {
+  async removeExperiences(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> {
     try {
+      const { expId } = req.params;
+      if (!isValidObjectId(expId)) {
+        return res
+          .status(422)
+          .json({ message: "شناسه تجربه سفر معتبر نمیباشد", status: 422 });
+      }
+      await exprerienceModel.findOneAndDelete({ _id: expId });
+      return res
+        .status(200)
+        .json({ message: "تجربه سفر با موفقیت حذف گردید", status: 200 });
     } catch (error) {
       next(error);
     }

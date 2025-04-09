@@ -4,6 +4,7 @@ import experienceCotroller from "../controllers/trExperience.controller";
 const router = express.Router();
 
 router.post("/add",verifyAccessToken,experienceCotroller.addExperience)
-router.get("/all",verifyAccessToken,experienceCotroller.ExperienceHandler)
+router.get("/allInPanel",verifyAccessToken,experienceCotroller.ExperienceHandler)
+router.delete("/:expId",verifyAccessToken,experienceCotroller.removeExperiences)
 
 export default router
