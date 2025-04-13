@@ -47,6 +47,6 @@ const travelExperienceSchema = new mongoose.Schema<TravelExprerience>(
   },
   { timestamps: true }
 );
-
+travelExperienceSchema.index({title:"text",body:"text"})
 const exprerienceModel = mongoose.model("experience", travelExperienceSchema);
 export default exprerienceModel;

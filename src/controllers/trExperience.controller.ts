@@ -1,17 +1,20 @@
 import { NextFunction, Request, Response } from "express";
 import { isValidObjectId, ObjectId } from "mongoose";
 import shedule from "node-schedule";
-import { TravelExprerience } from "../@types/trExperience.t";
+import { TravelExprerience, TrExpStatusTypes } from "../@types/trExperience.t";
 import exprerienceModel from "../models/trExperience";
 import NotificationService from "../services/notificationServices";
 import { reverseGeoCode } from "../utils/reverseGeoCode";
 import { trExperienceValidation } from "../validations/experience.schema";
 import Controller from "./controller";
+import SearchServices from "../services/searchServices";
 class TravelExperience extends Controller {
   private notificationSevice: NotificationService;
+  private searchSevice: SearchServices;
   constructor() {
     super();
     this.notificationSevice = new NotificationService();
+    this.searchSevice = new SearchServices();
   }
 
   async addExperience(
@@ -133,9 +136,19 @@ class TravelExperience extends Controller {
     next: NextFunction
   ): Promise<any> {
     try {
-      const status = req.query.status as "allTrExp" | "published" | "queue";
+      const status = req.query.status as TrExpStatusTypes;
       const user = req.user._id;
-      const filterMap: Record<"allTrExp" | "published" | "queue", object> = {
+     if(req.query.search){
+      const {searchResult, search}= await this.searchSevice.partialSearch(req,res,next,exprerienceModel)
+      if (!searchResult) {
+        return res.status(404).json({
+          message: `نتیجه‌ای برای جستجوی ${search} یافت نشد`,
+          status: 404,
+        });
+    }
+    return res.status(200).json(searchResult);
+  }
+      const filterMap: Record<TrExpStatusTypes, object> = {
         published: { publisher: user, isPublished: true },
         queue: { publisher: user, isPublished: false },
         allTrExp: { publisher: user },

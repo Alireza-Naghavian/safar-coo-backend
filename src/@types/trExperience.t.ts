@@ -11,3 +11,4 @@ export type TravelExprerience = {
     isPublished:boolean
     publisher:ObjectId
 }
+export type TrExpStatusTypes=  "allTrExp" | "published" | "queue";
