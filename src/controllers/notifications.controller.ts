@@ -100,6 +100,18 @@ export class NotificationContorller extends Controller {
       console.error("error accured in sending notification", error);
     }
   }
+  public async removeNotif(req:Request,res:Response,next:NextFunction):Promise<any>{
+    try {
+        const {notifId}= req.params;
+        if(!isValidObjectId(notifId)){
+          return res.status(404).json({message:"شناسه اعلان معتبر نمی باشد",status:404})
+        }
+        await notificationModel.findOneAndDelete({_id:notifId});
+        return res.status(200).json({message:"اعلان با موفقیت حذف گردید.",status:200});
+    } catch (error) {
+      next(error)
+    }
+  }
 }
 
 const NotifController = new NotificationContorller();
