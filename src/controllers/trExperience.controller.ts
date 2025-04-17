@@ -8,6 +8,7 @@ import { reverseGeoCode } from "../utils/reverseGeoCode";
 import { trExperienceValidation } from "../validations/experience.schema";
 import Controller from "./controller";
 import SearchServices from "../services/searchServices";
+import iranCity from "iran-city"
 class TravelExperience extends Controller {
   private notificationSevice: NotificationService;
   private searchSevice: SearchServices;
@@ -23,7 +24,7 @@ class TravelExperience extends Controller {
     next: NextFunction
   ): Promise<any> {
     try {
-      const { body, category, location, plan, publishTime, title, address } =
+      const { body, category, location, plan, publishTime, title, address,province,city } =
         req.body as TravelExprerience;
       const user = req.user;
       await trExperienceValidation.validateAsync({
@@ -31,6 +32,7 @@ class TravelExperience extends Controller {
         body,
         category,
         plan,
+        province,city
       });
 
       // auto reverse location to real address
@@ -57,6 +59,8 @@ class TravelExperience extends Controller {
         address: finalAddress,
         isPublished: !publishTime ? true : false,
         publisher: user._id,
+        city,
+        province
       });
 
       // publised on specific date ?

@@ -43,6 +43,14 @@ const travelExperienceSchema = new mongoose.Schema<TravelExprerience>(
       type:mongoose.Types.ObjectId,
       ref:"user",
       required:true
+    },
+    province:{
+      type:Number,
+      required:true
+    },
+    city:{
+      type:Number,
+      required:true
     }
   },
   { timestamps: true }
