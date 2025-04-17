@@ -9,6 +9,8 @@ export type TravelExprerience = {
     publishTime:Date|null,
     body:string
     isPublished:boolean
-    publisher:ObjectId
+    publisher:ObjectId;
+    province:number,
+    city:number;
 }
 export type TrExpStatusTypes=  "allTrExp" | "published" | "queue";

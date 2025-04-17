@@ -25,4 +25,6 @@ export const trExperienceValidation = Joi.object({
     .valid("PAID", "FREE")
     .required()
     .messages({"any.required":"فیلد هزینه مکان الزامی است"}),
+    province:Joi.number().required() .messages({"any.required":"انتخاب استان سفر الزامی است"}),
+    city:Joi.number().required() .messages({"any.required":"انتخاب شهر سفر الزامی است"}),
 });
