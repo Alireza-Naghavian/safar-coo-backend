@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { CookieOptions, Response } from "express";
 import { sign } from "jsonwebtoken";
 import { TokenOptions, Usertype } from "../@types/user.t";
+import { ACCESSTOKENEXP, REFRESHTOKENEXP } from "./constants";
 const saltRounds = 12;
 const cookieOptions: CookieOptions = {
   httpOnly: true,
@@ -37,31 +38,34 @@ const tokenGenerator = ({
   }
 };
 
+
 const setAccessToken = (res: Response, user: Usertype) => {
   const token = tokenGenerator({
     email: user.email,
     tokenSectretKey: process.env.AccessTokenSecretKey as string,
-    expiresIn: 60 * 60 * 24 * 30 * 1000,
+    expiresIn:ACCESSTOKENEXP,
   });
   if (token !== undefined) {
     return res.cookie("accessToken", token, {
       ...cookieOptions,
-      maxAge: 60 * 60 * 24 * 30 * 1000,
+      maxAge: ACCESSTOKENEXP,
     });
   }
+  return token
 };
 const setRefreshToken = async (res: Response, user: Usertype) => {
   const token = tokenGenerator({
     email: user.email,
     tokenSectretKey: process.env.RefreshTokenSecreKey as string,
-    expiresIn:  60 * 60 * 24 * 10 * 1000,
+    expiresIn:  REFRESHTOKENEXP,
   });
   if (token !== undefined) {
     return res.cookie("refreshToken", token, {
       ...cookieOptions,
-      maxAge: 60 * 60 * 24 * 10 * 1000,
+      maxAge: REFRESHTOKENEXP,
     });
   }
+  return token
 };
 
 export { comparePassword, hashPassword, setAccessToken, setRefreshToken };

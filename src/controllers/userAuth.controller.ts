@@ -21,6 +21,7 @@ import {
 import Controller from "./controller";
 import { NotificationContorller } from "./notifications.controller";
 import { ObjectId } from "mongoose";
+import { verifyRefreshToken } from "../middlewares/user.middleware";
 
 class userAuthController extends Controller {
   private applyNotification: NotificationContorller;
@@ -33,6 +34,7 @@ class userAuthController extends Controller {
     this.logout;
     this.sendingEmail;
     this.resetPassword;
+    this.refreshToken;
     this.editUserProfile;
     this.clientAuthMiddleware;
   }
@@ -108,7 +110,21 @@ class userAuthController extends Controller {
       next(error);
     }
   }
-
+  async refreshToken(req: Request, res: Response, next: NextFunction): Promise<any>{
+    try {
+      const userId = await verifyRefreshToken(req);
+      const user = await userModel.findOne({_id:userId})
+     if(user){
+      await setAccessToken(res,user as Usertype)
+      await setRefreshToken(res,user as Usertype)
+     }
+     return res.status(200).json({
+      user,status:200
+     })
+    } catch (error) {
+      next(error)
+    }
+  }
   async getMe(req: Request, res: Response, next: NextFunction): Promise<any> {
     try {
       const email = req.user.email;
@@ -307,19 +323,19 @@ class userAuthController extends Controller {
   ): Promise<any> {
     try {
       const refreshtoken = req.headers?.refreshtoken;
-      const accesstoken = req.headers?.accesstoken;
-      if (!accesstoken || !refreshtoken) {
+      // const accesstoken = req.headers?.accesstoken;
+      if ( !refreshtoken) {
         return res
           .status(401)
           .json({ message: "لطفا وارد حساب کاربری خود شوید.", status: 401 });
       }
       const token = cookieParser.signedCookie(
-        accesstoken as string,
+        refreshtoken as string,
         process.env.COOKIE_PARSER_SECRET_KEY as string
       );
       const tokenPayload: TokenPayload = verify(
         token as string,
-        process.env.AccessTokenSecretKey as string
+        process.env.RefreshTokenSecreKey as string
       ) as TokenPayload;
 
       const user = await userModel.findOne({ email: tokenPayload.email });
