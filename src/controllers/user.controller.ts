@@ -27,7 +27,7 @@ class userController extends Controller {
       const isValidUser = mongoose.isValidObjectId(user);
 
       if (!isValidUser) {
-        res.status(400).json({
+       return res.status(400).json({
           message: "شناسه کاربری معتبر نمی باشد",
           data: null,
           status: 400,
@@ -48,7 +48,7 @@ class userController extends Controller {
         referType: "ticket",
       };
       await this.notificationService.createNotification(notifData);
-      res
+    return  res
         .status(201)
         .json({ message: "تیکت با موفقیت ایجاد شد.", status: 201 });
     } catch (error) {
@@ -90,7 +90,7 @@ class userController extends Controller {
           .lean();
       }
       if (!tickets || tickets.length === 0) {
-        res
+      return  res
           .status(404)
           .json({ message: "تیکتی یافت نشد", data: null, status: 404 });
       }
@@ -112,11 +112,11 @@ class userController extends Controller {
         .populate("user", "username role")
         .lean();
       if (!tickets) {
-        res
+     return   res
           .status(404)
           .json({ message: "تیکتی یافت نشد", data: null, status: 404 });
       }
-      res.status(200).json(tickets);
+      return res.status(200).json(tickets);
     } catch (error) {
       next(error);
     }
